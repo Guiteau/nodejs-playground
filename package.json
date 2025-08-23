@@ -16,6 +16,7 @@
     "url": "https://github.com/Guiteau/nodejs-playground/issues"
   },
   "dependencies": {
+    "chalk": "^2.4.1",
     "validator": "^10.8.0"
   }
 }
