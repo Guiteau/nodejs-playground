@@ -14,6 +14,19 @@ app.get('/help', (req, res) => {
   res.send('Help page');
 });
 
+app.get('/weather', (req, res) => {
+    if(!req.query.address) {
+        return res.send({
+            error: 'You must provide an address'
+        });
+    }
+    res.send({
+        forecast: 'It is snowing',
+        location: 'Philadelphia',
+        address: req.query.address
+    });
+});
+
 app.listen(3000, () => {
   console.log('Server is running on port 3000');
 });
