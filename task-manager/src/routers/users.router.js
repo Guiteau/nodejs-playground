@@ -1,5 +1,6 @@
 const express = require("express")
 const User = require("../models/user.model")
+const auth = require("../middlewares/auth.mid")
 const router = new express.Router()
 
 // Endpoints for Users
@@ -17,20 +18,48 @@ router.post("/user", (req, res) => {
     })
 })
 
-router.get("/users", (req, res) => {
-  console.log("Fetching users...")
-  User.find({})
-    .then((users) => {
-      res.send(users)
-      console.log("Users fetched:", users)
-    })
-    .catch((error) => {
-      console.log("Error fetching users:", error)
-      res.status(500).send()
-    })
+user.post("/user/login", auth, async (req, res) => {
+  try {
+    const { email, password } = req.body
+    console.log(`Logging in user with email: ${email}`)
+    const user = await User.findByCredentials(email, password)
+    if (!user) {
+      return res.status(401).send({ error: "Login failed!" })
+    }
+    res.send({ user })
+  } catch (error) {
+    console.log("Error logging in user:", error)
+    res.status(500).send()
+  }
 })
 
-router.get("/user/:id", (req, res) => {
+router.post("/user/logout", auth, async (req, res) => {
+  try {
+    req.user.tokens = req.user.tokens.filter((token) => {
+      return token.token !== req.token
+    })
+    await req.user.save()
+    res.send()
+  } catch (error) {
+    res.status(500).send()
+  }
+})
+
+router.post("/user/logoutAll", auth, async (req, res) => {
+  try {
+    req.user.tokens = []
+    await req.user.save()
+    res.send()
+  } catch (error) {
+    res.status(500).send()
+  }
+})
+
+router.get("/users/me", auth, async (req, res) => {
+  res.send(req.user)
+})
+
+router.get("/user/:id", auth, async (req, res) => {
   const _id = req.params.id
   console.log(`Fetching user with ID: ${_id}`)
   User.findById(_id)
@@ -93,21 +122,6 @@ router.delete("/user/:id", (req, res) => {
       console.log("Error deleting user:", error)
       res.status(500).send()
     })
-})
-
-user.post("/user/login", async (req, res) => {
-  try {
-    const { email, password } = req.body
-    console.log(`Logging in user with email: ${email}`)
-    const user = await User.findByCredentials(email, password)
-    if (!user) {
-      return res.status(401).send({ error: "Login failed!" })
-    }
-    res.send({ user })
-  } catch (error) {
-    console.log("Error logging in user:", error)
-    res.status(500).send()
-  }
 })
 
 module.exports = router
