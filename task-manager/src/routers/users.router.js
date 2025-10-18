@@ -94,4 +94,19 @@ router.delete("/user/:id", (req, res) => {
     })
 })
 
+user.post("/user/login", async (req, res) => {
+  try {
+    const { email, password } = req.body
+    console.log(`Logging in user with email: ${email}`)
+    const user = await User.findByCredentials(email, password)
+    if (!user) {
+      return res.status(401).send({ error: "Login failed!" })
+    }
+    res.send({ user })
+  } catch (error) {
+    console.log("Error logging in user:", error)
+    res.status(500).send()
+  }
+})
+
 module.exports = router;
