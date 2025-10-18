@@ -9,7 +9,8 @@ router.post("/user", (req, res) => {
   user
     .save()
     .then(() => {
-      res.status(201).send(user)
+      const token = user.generateAuthToken()
+      res.status(201).send({ user, token })
     })
     .catch((error) => {
       res.status(400).send(error)
@@ -109,4 +110,4 @@ user.post("/user/login", async (req, res) => {
   }
 })
 
-module.exports = router;
+module.exports = router

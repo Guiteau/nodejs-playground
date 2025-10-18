@@ -19,6 +19,14 @@ const userschema = new mongoose.Schema({
       }
     },
   },
+  tokens: [
+    {
+      token: {
+        type: String,
+        required: true,
+      },
+    },
+  ],
   password: {
     type: String,
     required: true,
@@ -40,6 +48,15 @@ const userschema = new mongoose.Schema({
     },
   },
 });
+
+userschema.methods.generateAuthToken = async function () {
+  const user = this;
+  const jwt = require('jsonwebtoken');
+  const token = jwt.sign({ _id: user._id.toString() }, 'mysecret', { expiresIn: '7 days' });
+  user.tokens = user.tokens.concat({ token });
+  await user.save();
+  return token;
+};
 
 userschema.statics.findByCredentials = async (email, password) => {
   const user = await User.findOne({ email });

@@ -28,5 +28,17 @@ const startServer = async () => {
   }
 };
 
+// JWT Demonstration
+const jwt = require('jsonwebtoken');
+const jwtFunction = async () => {
+  const token = jwt.sign({ _id: 'abc123' }, 'mysecret', { expiresIn: '7 days' });
+  console.log("Generated JWT:", token);
+
+  const data = jwt.verify(token, 'mysecret');
+  console.log("Decoded JWT data:", data);
+};
+
+jwtFunction();
+
 console.log("Starting server...");
 startServer();
