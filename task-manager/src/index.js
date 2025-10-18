@@ -2,9 +2,9 @@
 const express = require('express');
 const connectDB = require('./db/mongoose');
 
-// Import models
-const User = require('./models/user.model');
-const Task = require('./models/task.model');
+// Import routers
+const usersRouter = require('./routers/users.router');
+const tasksRouter = require('./routers/tasks.router');
 
 // Initialize Express app
 const app = express();
@@ -12,165 +12,9 @@ const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON
 app.use(express.json());
-
-// Endpoints
-app.post('/user', (req, res) => {
-  console.log("Creating user...");
-  const user = new User(req.body);
-  user.save().then(() => {
-    res.status(201).send(user);
-  }).catch((error) => {
-    res.status(400).send(error);
-  });
-});
-
-app.get('/users', (req, res) => {
-  console.log("Fetching users...");
-  User.find({}).then((users) => {
-    res.send(users);
-    console.log("Users fetched:", users);
-  }).catch((error) => {
-    console.log("Error fetching users:", error);
-    res.status(500).send();
-  });
-});
-
-app.get('/user/:id', (req, res) => {
-  const _id = req.params.id;
-  console.log(`Fetching user with ID: ${_id}`);
-  User.findById(_id).then((user) => {
-    if (!user) {
-      console.log("User not found");
-      return res.status(404).send();
-    }
-    res.send(user);
-    console.log("User fetched:", user);
-  }).catch((error) => {
-    console.log("Error fetching user:", error);
-    res.status(500).send();
-  });
-});
-
-app.patch('/user/:id', (req, res) => {
-  const updates = Object.keys(req.body);
-  const allowedUpdates = ['name', 'email', 'password', 'age'];
-  const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
-
-  if (!isValidOperation) {
-    console.log("Invalid updates attempted:", updates);
-    return res.status(400).send({ error: 'Invalid updates!' });
-  }
-
-  const _id = req.params.id;
-  console.log(`Updating user with ID: ${_id}`);
-  User.findByIdAndUpdate(_id, req.body, { new: true, runValidators: true }).then((user) => {
-    if (!user) {
-      console.log("User not found for update");
-      return res.status(404).send();
-    }
-    res.send(user);
-    console.log("User updated:", user);
-  }).catch((error) => {
-    console.log("Error updating user:", error);
-    res.status(400).send(error);
-  });
-});
-
-app.delete('/user/:id', (req, res) => {
-  const _id = req.params.id;
-  console.log(`Deleting user with ID: ${_id}`);
-  User.findByIdAndDelete(_id).then((user) => {
-    if (!user) {
-      console.log("User not found for deletion");
-      return res.status(404).send();
-    }
-    res.send(user);
-    console.log("User deleted:", user);
-  }).catch((error) => {
-    console.log("Error deleting user:", error);
-    res.status(500).send();
-  });
-});
-
-app.post('/task', (req, res) => {
-  console.log("Creating task...");
-  const task = new Task(req.body);
-  task.save().then(() => {
-    res.status(201).send(task);
-    console.log("Task created:", task);
-  }).catch((error) => {
-    console.log("Error creating task:", error);
-    res.status(400).send(error);
-  });
-});
-
-app.get('/tasks', (req, res) => {
-  console.log("Fetching tasks...");
-  Task.find({}).then((tasks) => {
-    res.send(tasks);
-    console.log("Tasks fetched:", tasks);
-  }).catch((error) => {
-    console.log("Error fetching tasks:", error);
-    res.status(500).send();
-  });
-});
-
-app.get('/task/:id', (req, res) => {
-  const _id = req.params.id;
-  console.log(`Fetching task with ID: ${_id}`);
-  Task.findById(_id).then((task) => {
-    if (!task) {
-      console.log("Task not found");
-      return res.status(404).send();
-    }
-    res.send(task);
-    console.log("Task fetched:", task);
-  }).catch((error) => {
-    console.log("Error fetching task:", error);
-    res.status(500).send();
-  });
-});
-
-app.patch('/task/:id', (req, res) => {
-  const updates = Object.keys(req.body);
-  const allowedUpdates = ['description', 'completed'];
-  const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
-
-  if (!isValidOperation) {
-    console.log("Invalid task updates attempted:", updates);
-    return res.status(400).send({ error: 'Invalid updates!' });
-  }
-
-  const _id = req.params.id;
-  console.log(`Updating task with ID: ${_id}`);
-  Task.findByIdAndUpdate(_id, req.body, { new: true, runValidators: true }).then((task) => {
-    if (!task) {
-      console.log("Task not found for update");
-      return res.status(404).send();
-    }
-    res.send(task);
-    console.log("Task updated:", task);
-  }).catch((error) => {
-    console.log("Error updating task:", error);
-    res.status(400).send(error);
-  });
-});
-
-app.delete('/task/:id', (req, res) => {
-  const _id = req.params.id;
-  console.log(`Deleting task with ID: ${_id}`);
-  Task.findByIdAndDelete(_id).then((task) => {
-    if (!task) {
-      console.log("Task not found for deletion");
-      return res.status(404).send();
-    }
-    res.send(task);
-    console.log("Task deleted:", task);
-  }).catch((error) => {
-    console.log("Error deleting task:", error);
-    res.status(500).send();
-  });
-});
+// Use routers
+app.use(usersRouter);
+app.use(tasksRouter);
 
 // Start server after connecting to DB
 const startServer = async () => {
