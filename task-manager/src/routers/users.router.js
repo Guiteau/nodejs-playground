@@ -18,15 +18,20 @@ router.post("/user", (req, res) => {
     })
 })
 
-user.post("/user/login", auth, async (req, res) => {
+router.post("/user/login", auth, async (req, res) => {
   try {
     const { email, password } = req.body
     console.log(`Logging in user with email: ${email}`)
     const user = await User.findByCredentials(email, password)
+
     if (!user) {
       return res.status(401).send({ error: "Login failed!" })
     }
-    res.send({ user })
+    res.send({
+      user: user.getPublicProfile(),
+      token: await user.generateAuthToken(),
+    })
+    console.log("User logged in:", user.getPublicProfile())
   } catch (error) {
     console.log("Error logging in user:", error)
     res.status(500).send()

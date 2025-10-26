@@ -49,6 +49,16 @@ const userschema = new mongoose.Schema({
   },
 });
 
+userschema.methods.getPublicProfile = function () {
+  const user = this;
+  const userObject = user.toObject();
+
+  delete userObject.password;
+  delete userObject.tokens;
+
+  return userObject;
+}
+
 userschema.methods.generateAuthToken = async function () {
   const user = this;
   const jwt = require('jsonwebtoken');
