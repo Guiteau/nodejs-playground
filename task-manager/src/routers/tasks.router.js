@@ -1,5 +1,7 @@
 const express = require("express")
-const Task = require("../models/task.model")
+const Task = require("../models/task.model");
+const auth = require("../middlewares/auth.mid");
+const { options } = require("yargs");
 const router = new express.Router()
 
 // Endpoints for Tasks
@@ -15,16 +17,27 @@ router.post('/task', (req, res) => {
   });
 });
 
-router.get('/tasks', (req, res) => {
-  console.log("Fetching tasks...");
-  Task.find({}).then((tasks) => {
-    res.send(tasks);
-    console.log("Tasks fetched:", tasks);
-  }).catch((error) => {
-    console.log("Error fetching tasks:", error);
+router.get('/tasks', auth , async(req, res) => {
+  console.log("Fetching tasks for authenticated user...");
+  const match = {};
+  if(req.query.completed){
+    match.completed = req.query.completed === 'true';
+  }
+  try {
+    await req.user.populate({
+      path: 'tasks',
+      match,
+      options: {
+        limit: parseInt(req.query.limit),
+        skip: parseInt(req.query.skip),
+      }
+    }).execPopulate();
+    res.send(req.user.tasks);
+  } catch (error) {
+    console.log("Error fetching tasks for user:", error);
     res.status(500).send();
-  });
-});
+  }
+})
 
 router.get('/task/:id', (req, res) => {
   const _id = req.params.id;
