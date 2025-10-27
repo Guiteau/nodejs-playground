@@ -10,6 +10,28 @@ const tasksRouter = require('./routers/tasks.router');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Import multer for file uploads
+const multer = require('multer');
+const upload = multer({
+  dest: 'images',
+  limits: {
+    fileSize: 1000000 // 1 MB
+  },
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(doc|docx)$/)) {
+      return cb(new Error('Please upload a Word document'));
+    }
+    cb(undefined, true);
+  }
+});
+
+// File upload endpoint
+app.post('/upload', upload.single('upload'), (req, res) => {
+  res.send();
+}, (error, req, res, next) => {
+  res.status(400).send({ error: error.message });
+});
+
 // Middleware to parse JSON
 app.use(express.json());
 // Use routers
